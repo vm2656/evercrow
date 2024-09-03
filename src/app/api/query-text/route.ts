@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOCRResult, storeQueryResult } from '@/app/lib/supabase';
+import { fuzzySearch } from '@/app/lib/search';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,23 +19,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Count occurrences
-    const count = countOccurrences(ocrText, query);
+    const { count, didYouMean } = fuzzySearch(ocrText, query);
     console.log(`Occurrences of "${query}": ${count}`);
 
     // Store query result
     await storeQueryResult(documentId, query, count);
     console.log('Query result stored successfully');
 
-    return NextResponse.json({ count });
+    return NextResponse.json({ count, didYouMean });
   } catch (error: any) {
     console.error('Error querying text:', error);
     return NextResponse.json({ error: 'Failed to query text' }, { status: 500 });
   }
-}
-
-function countOccurrences(text: string, query: string): number {
-  const regex = new RegExp(query, 'gi');
-  const occurrences = (text.match(regex) || []).length;
-  console.log(`Counted ${occurrences} occurrences of "${query}"`);
-  return occurrences;
 }
