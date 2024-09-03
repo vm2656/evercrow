@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
 
     // Retrieve OCR result from Supabase
     const ocrText = await getOCRResult(documentId);
-
     if (!ocrText) {
-      console.log('Document not found');
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      console.log('No text detected');
+      return NextResponse.json({ error: 'No text detected' }, { status: 404 });
     }
 
     // Count occurrences

@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 
 interface ResultDisplayProps {
@@ -11,7 +9,7 @@ export default function ResultDisplay({ count, error }: ResultDisplayProps) {
   return (
     <div className="mt-8">
       {error && (
-        <p className="text-red-600">{error}</p>
+        <p className={count === null ? "text-green-600" : "text-red-600"}>{error}</p>
       )}
       {count !== null && (
         <p className="text-lg">
