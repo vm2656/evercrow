@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 
+type ResultStatus = 'success' | 'error' | 'idle';
+
 interface FileUploadProps {
-  onResultUpdate: (count: number | null, error: string | null) => void;
+  onResultUpdate: (count: number | null, error: string | null, status: ResultStatus) => void;
 }
 
 export default function FileUpload({ onResultUpdate }: FileUploadProps) {
@@ -12,11 +14,12 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
   const [loading, setLoading] = useState(false);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [result, setResult] = useState<{ count: number | null; error: string | null; status: 'success' | 'error' | 'idle' }>({ count: null, error: null, status: 'idle' });
 
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      onResultUpdate(null, 'Please select a file.');
+      handleResultUpdate(null, 'Please select a file.', 'error');
       return;
     }
 
@@ -34,14 +37,14 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
       if (response.ok) {
         setDocumentId(result.documentId);
         setUploadStatus('success');
-        onResultUpdate(null, 'File uploaded and processed successfully.');
+        handleResultUpdate(null, 'File uploaded and processed successfully.', 'success');
       } else {
         setUploadStatus('error');
-        onResultUpdate(null, result.error || 'An error occurred while processing your file.');
+        handleResultUpdate(null, result.error || 'An error occurred while processing your file.', 'error');
       }
     } catch (error) {
       setUploadStatus('error');
-      onResultUpdate(null, 'An error occurred while uploading and processing your file.');
+      handleResultUpdate(null, 'An error occurred while uploading and processing your file.', 'error');
     } finally {
       setLoading(false);
     }
@@ -50,12 +53,12 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
   const handleCountOccurrences = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!documentId || !query) {
-      onResultUpdate(null, 'Please upload a file and enter a bird name.');
+      handleResultUpdate(null, 'Please upload a file and enter a bird name.', 'error');
       return;
     }
 
     setLoading(true);
-    onResultUpdate(null, null); // Clear previous results
+    handleResultUpdate(null, null, 'idle'); // Clear previous results
 
     try {
       const response = await fetch('/api/query-text', {
@@ -67,15 +70,20 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
       });
       const result = await response.json();
       if (response.ok) {
-        onResultUpdate(result.count, null);
+        handleResultUpdate(result.count, null, 'success');
       } else {
-        onResultUpdate(null, result.error || 'An error occurred while counting occurrences.');
+        handleResultUpdate(null, result.error || 'An error occurred while counting occurrences.', 'error');
       }
     } catch (error) {
-      onResultUpdate(null, 'An error occurred while counting occurrences.');
+      handleResultUpdate(null, 'An error occurred while counting occurrences.', 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResultUpdate = (count: number | null, error: string | null, status: 'success' | 'error' | 'idle') => {
+    setResult({ count, error, status });
+    onResultUpdate(count, error, status);
   };
 
   return (
