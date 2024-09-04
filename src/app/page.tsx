@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import ResultDisplay from './components/ResultDisplay';
+import FlyingBirds from './components/FlyingBirds';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 
 type ResultStatus = 'idle' | 'success' | 'error';
@@ -19,8 +20,9 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
-      <Card className="w-full max-w-3xl shadow-lg">
+    <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4 overflow-hidden">
+      <FlyingBirds />
+      <Card className="w-full max-w-2xl shadow-lg z-10">
         <div className="p-8 space-y-8">
           <CardTitle className="text-3xl font-bold text-center text-gray-800">Evercrow Bird Name Counter</CardTitle>
           <CardDescription className="text-lg text-center text-gray-600">
