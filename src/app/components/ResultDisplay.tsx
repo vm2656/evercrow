@@ -1,33 +1,33 @@
-import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface ResultDisplayProps {
-  count: number | null;
-  error: string | null;
-  status: 'success' | 'error' | 'idle';
+  count: number | null
+  error: string | null
+  status: 'success' | 'error' | 'idle'
 }
 
 export default function ResultDisplay({ count, error, status }: ResultDisplayProps) {
-  const getStatusColor = () => {
-    switch (status) {
-      case 'success':
-        return 'text-green-600';
-      case 'error':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+  if (status === 'idle') return null
 
-  return (
-    <div className="mt-8">
-      {error && (
-        <p className={`${getStatusColor()} font-medium`}>{error}</p>
-      )}
-      {count !== null && (
-        <p className={`${getStatusColor()} text-lg`}>
-          The bird name appears <span className="font-bold">{count}</span> times in the uploaded PDF.
-        </p>
-      )}
-    </div>
-  );
+  if (status === 'error') {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    )
+  }
+
+  if (status === 'success' && count !== null) {
+    return (
+      <Alert>
+        <AlertTitle>Result</AlertTitle>
+        <AlertDescription>
+          The bird name appears <strong>{count}</strong> times in the uploaded PDF.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
+  return null
 }

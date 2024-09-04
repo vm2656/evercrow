@@ -1,6 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type ResultStatus = 'success' | 'error' | 'idle';
 
@@ -23,7 +27,6 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
       return;
     }
 
-    // Clear previous results
     handleResultUpdate(null, null, 'idle', null);
 
     setLoading(true);
@@ -61,7 +64,7 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
     }
 
     setLoading(true);
-    handleResultUpdate(null, null, 'idle', null); // Clear previous results
+    handleResultUpdate(null, null, 'idle', null);
 
     try {
       const response = await fetch('/api/query-text', {
@@ -93,68 +96,58 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
     <div className="space-y-4">
       <form onSubmit={handleFileUpload} className="space-y-4">
         <div>
-          <label htmlFor="file" className="block text-sm font-medium text-gray-700">
-            Upload PDF
-          </label>
-          <input
+          <Label htmlFor="file">Upload PDF</Label>
+          <Input
             type="file"
             id="file"
             accept=".pdf"
             onChange={(e) => {
               setFile(e.target.files?.[0] || null);
-              // Clear previous results when a new file is selected
               handleResultUpdate(null, null, 'idle', null);
             }}
-            className="mt-1 block w-full"
           />
         </div>
-        <button
-          type="submit"
-          disabled={loading || !file}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
+        <Button type="submit" disabled={loading || !file}>
           {uploadStatus === 'uploading' ? 'Uploading...' : 'Upload and Process File'}
-        </button>
+        </Button>
       </form>
 
       {uploadStatus === 'success' && (
         <form onSubmit={handleCountOccurrences} className="space-y-4">
           <div>
-            <label htmlFor="query" className="block text-sm font-medium text-gray-700">
-              Bird Name
-            </label>
-            <input
+            <Label htmlFor="query">Bird Name</Label>
+            <Input
               type="text"
               id="query"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="mt-1 block w-full border-gray-300 text-black rounded-md shadow-sm"
               placeholder="Enter bird name"
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading || !query}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
+          <Button type="submit" disabled={loading || !query}>
             {loading ? 'Counting...' : 'Count Occurrences'}
-          </button>
+          </Button>
           {result.didYouMean && (
             <p className="text-sm text-gray-600">
-              Did you mean: <button 
-                type="button" 
-                className="text-blue-600 underline" 
+              Did you mean:{' '}
+              <Button
+                variant="link"
+                className="p-0 h-auto"
                 onClick={() => setQuery(result.didYouMean!)}
               >
                 {result.didYouMean}
-              </button>?
+              </Button>
+              ?
             </p>
           )}
         </form>
       )}
 
       {uploadStatus === 'error' && (
-        <p className="text-red-600">Error uploading file. Please try again.</p>
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>Error uploading file. Please try again.</AlertDescription>
+        </Alert>
       )}
     </div>
   );
