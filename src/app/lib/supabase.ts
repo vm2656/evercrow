@@ -23,6 +23,17 @@ export async function getOCRResultByHash(fileHash: string) {
   return data;
 }
 
+export async function getOCRResult(documentId: string) {
+  const { data, error } = await supabase
+    .from('ocr_results')
+    .select('ocr_text')
+    .eq('id', documentId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error; // PGRST116 is the error code for no rows returned
+  return data;
+}
+
 export async function updateOCRResultTimestamp(id: string) {
   const { error } = await supabase
     .from('ocr_results')

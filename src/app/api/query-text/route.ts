@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOCRResult, storeQueryResult } from '@/app/lib/supabase';
+import { getOCRResult } from '@/app/lib/supabase';
 import { fuzzySearch } from '@/app/lib/search';
 
 export async function POST(request: NextRequest) {
@@ -19,12 +19,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Count occurrences
-    const { count, didYouMean } = fuzzySearch(ocrText, query);
+    const { count, didYouMean } = fuzzySearch(ocrText.ocr_text, query);
     console.log(`Occurrences of "${query}": ${count}`);
-
-    // Store query result
-    await storeQueryResult(documentId, query, count);
-    console.log('Query result stored successfully');
 
     return NextResponse.json({ count, didYouMean });
   } catch (error: any) {
