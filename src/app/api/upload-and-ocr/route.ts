@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToS3 } from '@/app/lib/s3';
 import { performOCR } from '@/app/lib/ocr';
-import { storeOCRResult } from '@/app/lib/supabase';
+import { storeOCRResult, getOCRResultByHash, updateOCRResultTimestamp } from '@/app/lib/supabase';
+import { computeFileHash } from '@/app/lib/fileHash';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,26 +10,25 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      console.log('No file uploaded');
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Upload to S3
-    console.log('Uploading file to S3');
+    // Compute file hash
+    const fileHash = await computeFileHash(file);
+
+    // Check if we already have OCR results for this hash
+    const existingResult = await getOCRResultByHash(fileHash);
+    if (existingResult) {
+      // Update timestamp to mark it as recently used
+      await updateOCRResultTimestamp(existingResult.id);
+      return NextResponse.json({ documentId: existingResult.id, message: 'File already processed' });
+    }
+
+    // If not found, proceed with upload and OCR
     const s3Key = await uploadToS3(file);
-    console.log('File uploaded to S3:', s3Key);
-
-    // Perform OCR
-    console.log('Performing OCR on file:', s3Key);
     const ocrText = await performOCR(s3Key);
-    console.log('OCR completed:', ocrText);
+    const documentId = await storeOCRResult(s3Key, ocrText, fileHash);
 
-    // Store OCR result in Supabase
-    console.log('Storing OCR result in Supabase');
-    const documentId = await storeOCRResult(s3Key, ocrText);
-    console.log('OCR result stored in Supabase:', documentId);
-
-    console.log('File processed successfully');
     return NextResponse.json({ documentId, message: 'File processed successfully' });
   } catch (error: any) {
     console.error('Error processing file:', error);

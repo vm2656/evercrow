@@ -11,30 +11,26 @@ function stemWord(word: string): string {
 }
 
 export function fuzzySearch(text: string, query: string): SearchResult {
-  // Split the text into words and stem each word
   const words = text.split(/\s+/);
   const stemmedWords = words.map(stemWord);
-
-  // Stem the query for comparison
   const stemmedQuery = stemWord(query);
 
-  // Calculate the maximum allowed Levenshtein distance (20% of query length)
-  const maxDistance = Math.floor(stemmedQuery.length * 0.2);
+  // Calculate the maximum allowed Levenshtein distance for counting matches (10% of query length)
+  const maxDistanceForCount = Math.floor(stemmedQuery.length * 0.1);
+
+  // More relaxed distance for "Did you mean" suggestions (30% of query length)
+  const maxDistanceForSuggestion = Math.floor(stemmedQuery.length * 0.3);
 
   let count = 0;
   let bestMatch = { word: '', distance: Infinity };
 
-  // Compare each stemmed word with the stemmed query
   stemmedWords.forEach((stemmedWord, index) => {
-    // Calculate Levenshtein distance between stemmed word and query
     const distance = levenshtein(stemmedWord, stemmedQuery);
 
-    // If distance is within allowed range, increment match count
-    if (distance <= maxDistance) {
+    if (distance <= maxDistanceForCount) {
       count++;
     }
 
-    // Keep track of the closest match
     if (distance < bestMatch.distance) {
       bestMatch = { word: words[index], distance };
     }
@@ -43,7 +39,8 @@ export function fuzzySearch(text: string, query: string): SearchResult {
   const result: SearchResult = { count };
 
   // Add "did you mean" suggestion if the best match is close but not exact
-  if (bestMatch.word.toLowerCase() !== query.toLowerCase() && bestMatch.distance <= maxDistance) {
+  // using the more relaxed maxDistanceForSuggestion
+  if (bestMatch.word.toLowerCase() !== query.toLowerCase() && bestMatch.distance <= maxDistanceForSuggestion) {
     result.didYouMean = bestMatch.word;
   }
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { fuzzySearch } from '@/app/lib/search'; // Ensure this import path is correct
 
 type ResultStatus = 'success' | 'error' | 'idle';
 
@@ -23,6 +22,9 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
       handleResultUpdate(null, 'Please select a file.', 'error', null);
       return;
     }
+
+    // Clear previous results
+    handleResultUpdate(null, null, 'idle', null);
 
     setLoading(true);
     setUploadStatus('uploading');
@@ -98,7 +100,11 @@ export default function FileUpload({ onResultUpdate }: FileUploadProps) {
             type="file"
             id="file"
             accept=".pdf"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            onChange={(e) => {
+              setFile(e.target.files?.[0] || null);
+              // Clear previous results when a new file is selected
+              handleResultUpdate(null, null, 'idle', null);
+            }}
             className="mt-1 block w-full"
           />
         </div>
