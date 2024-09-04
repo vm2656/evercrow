@@ -15,6 +15,7 @@ Feel free to try it out and explore the features!
 - Fuzzy search for bird name occurrences
 - "Did you mean" suggestions for potential misspellings
 - Modern UI built with Next.js and shadcn/ui components
+- Efficient caching system for already processed documents.
 
 ## Tech Stack
 
